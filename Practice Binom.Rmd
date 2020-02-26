@@ -1,0 +1,211 @@
+---
+title: "Practice Binom"
+output: 
+  html_document:
+    theme: cerulean
+runtime: shiny_prerendered
+---
+
+```{r setup, include=FALSE}
+require(ggplot2)
+require(dplyr)
+require(tidyr)
+require(learnr)
+source("https://raw.githubusercontent.com/kbodwin/Introductory-Statistics-Labs/master/Scripts/plotDensities.R")
+source("https://raw.githubusercontent.com/kbodwin/Introductory-Statistics-Labs/master/Scripts/makeStrings.R")
+titanic = read.csv('https://raw.githubusercontent.com/kbodwin/ShinyLabs/master/Datasets/titanic.csv')
+titanic <- titanic %>% mutate(
+  Survived = factor(Survived,
+                    levels = c(0,1),
+                    labels = c("Died", "Lived")),
+  Passenger.Class = factor(Pclass, 
+                           levels = c(1,2,3), 
+                           labels = c("First", "Second", "Third"))
+)
+knitr::opts_chunk$set(echo = FALSE)
+```
+ 
+
+# {.tabset}
+
+## Intro {.tabset .tabset-pills}
+
+A binomial experiment is an experiment satisfying the following conditions. 
+
+1.	There is a fixed number of trials, denoted by n.
+2.	A trial has only two possible outcomes: a “success” or a “failure.”
+3.	The trials of the experiment are independent of each other (if the outcome of one trial is a “success,” then the chance that another outcome is a “success” is not influenced).
+4.	The probability of observing a “success” on each trial remains the same, denoted by p. We denote the probability of a “failure” by q = 1 – p. 
+
+In general, a binomial random variable is a random variable that represents the number of “successes” in n trials.
+
+If a random variable follows a binomial distribution we write it as: X~Binomial(n, p)
+
+This applet will go over three funtions to help you with the binomial process: <br>
+**dbinom** will calculate the probability of a given number of successes <br>
+**pbinom** will calculate the probability of less than or equal to a given number of successes <br>
+**qbinom** lets us work our way backward to find the number of successes for a given probability <br>
+^ should fix qbinom to mention that it's that it's a range of successes
+*add binomial example*
+
+## dbinom {.tabset .tabset-pills}
+
+### Create your own binomial distribution!
+
+The first important function is `dbinom()`, which finds the *probability* of some number of successes.
+
+```{r factor_var}
+textInput("n",
+          "How many trials do you have?",
+          value = "0",
+          width = '80%', placeholder = NULL)
+textInput("p",
+          "What is the probability of success at each trial?",
+          value = "0",
+          width = '80%', placeholder = NULL)
+textInput("k",
+          "We are interested in the probability of how many successes?",
+          value = "0",
+          width = '80%', placeholder = NULL)
+bs_1_1 = reactive("dbinom(%ni, size = %ni, prob = %ni)")
+```
+
+```{r, context="server"}
+# nothing happens here, you can put in the input but rmd doesn't do anything with it
+#output$plot = renderPlot(barplot(dbinom(0:input$n, size = input$n, prob = input$p)))
+output$code_1_1 <- renderText(
+        makePrintText(
+          base_string = bs_1_1(),
+          old_input = c(),
+          new_input = c(input$k, input$n, input$p)
+        )
+  )
+output$output_1_1 <- renderPrint({
+ eval(parse(text = 
+    makeEvalText(
+      base_string = bs_1_1(), 
+      old_input = c(),
+      new_input = c(input$k, input$n, input$p)
+    )
+   ))
+})
+output$binom_var_1 <- renderText(
+        makePrintText(
+          base_string = "X ~ Binomial(%ni, %ni) \n P(X = %ni) = ?",
+          old_input = c(),
+          new_input = c(input$n, input$p, input$k)
+        )
+  )
+output$distn_1 <- renderPlot(
+  illustrate_binom(input$n, input$p, x = input$k, equal_to = TRUE)
+)
+```
+
+
+### practice problems
+
+In the box below, you may run any line of **R** code.  Use the box, and/or the exercise above, to answer the following questions.
+
+```{r dbinom, exercise = TRUE, exercise.lines = 5}
+```
+
+```{r q_1}
+textInput("a_1.1",
+           "I flip 30 fair coins.  What is the probability that I get exactly 15 tails?",
+           value = "",
+           width = '80%', placeholder = NULL)
+htmlOutput("check_1.1")
+textInput("a_1.2",
+           "16% of all Starburst candies in a pack are cherry flavored.  What is the probability that in a pack of 12, I get exactly 4 cherry Starbursts?",
+           value = "",
+           width = '80%', placeholder = NULL)
+htmlOutput("check_1.2")
+textInput("a_1.3",
+           "In an upcoming election, 40% of voters prefer Candidate A, and 60% prefer Candidate B.  If only 16 people vote, what is the probability that the vote is NOT tied?",
+           value = "",
+           width = '80%', placeholder = NULL)
+htmlOutput("check_1.3")
+textInput("a_1.4",
+           "Let's take a look at the `titanic` data set. In this data set, each observation is a passenger who was on the Titanic; there are a number of variables including passenger class, age, sex, whether the passenger survived or not. If I randomly selected 60 passengers, what is the probability that exactly one third of them survived? (Hint: This question takes a little bit of work, think about how you would go about finding the probability of people who survived. Still confused? See the Quantitative Variables lab exercise.)",
+           value = "",
+           width = '80%', placeholder = NULL)
+htmlOutput("check_1.4")
+```
+
+```{r, context = "server"}
+output$check_1.1 <- renderText(
+  if(input$a_1.1 == ""){
+     ""
+  }else if(round(input$a_1.1,2) == round(dbinom(15, 30, .5), 2)){
+      correct
+  }else{
+    incorrect
+  }
+)
+output$check_1.2 <- renderText(
+  if(input$a_1.2 == ""){
+     ""
+  }else if(round(input$a_1.2,2) == round(dbinom(4, 12, 0.16), 2)){
+      correct
+  }else{
+    incorrect
+  }
+)
+output$check_1.3 <- renderText(
+  if(input$a_1.3 == ""){
+     ""
+  }else if(round(input$a_1.3,2) == round(1- dbinom(8, 16, 0.4), 2)){
+      correct
+  }else{
+    incorrect
+  }
+)
+output$check_1.4 <- renderText(
+  if(input$a_1.4 == ""){
+     ""
+  }else if(round(input$a_1.1,2) == round(dbinom(20, 60, 342/887), 2)){
+      correct
+  }else{
+    incorrect
+  }
+)
+```
+
+## pbinom {.tabset .tabset-pills}
+
+### practice creating
+The first important function is `dbinom()`, which finds the *probability* of some number of successes.
+some input stuff
+
+Random variable and probability statement:
+
+Code:
+
+Result:
+
+Illustration:
+
+
+### practice problems
+
+some stuff
+
+
+## qbinom {.tabset .tabset-pills}
+
+### practice creating
+The first important function is `dbinom()`, which finds the *probability* of some number of successes.
+some input stuff
+
+Random variable and probability statement:
+
+Code:
+
+Result:
+
+Illustration:
+
+
+### practice problems
+
+some stuff
