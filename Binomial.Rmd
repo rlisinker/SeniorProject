@@ -24,6 +24,15 @@ require(dplyr)
 require(shiny)
 require(tidyr)
 require(learnr)
+titanic = read.csv('https://raw.githubusercontent.com/kbodwin/ShinyLabs/master/Datasets/titanic.csv')
+titanic <- titanic %>% mutate(
+  Survived = factor(Survived,
+                    levels = c(0,1),
+                    labels = c("Died", "Lived")),
+  Passenger.Class = factor(Pclass, 
+                           levels = c(1,2,3), 
+                           labels = c("First", "Second", "Third"))
+)
 source("https://raw.githubusercontent.com/kbodwin/Introductory-Statistics-Labs/master/Scripts/plotDensities.R")
 source("https://raw.githubusercontent.com/kbodwin/Introductory-Statistics-Labs/master/Scripts/makeStrings.R")
 knitr::opts_chunk$set(echo = FALSE)
@@ -133,7 +142,7 @@ output$distn_1 <- renderPlot(
 
 In the box below, you may run any line of **R** code.  Use the box, and/or the exercise above, to answer the following questions.
 
-```{r ex_1-1, exercise = TRUE}
+```{r ex_1-1, exercise = TRUE, exercise.lines = 5}
 ```
 
 ```{r q_1}
@@ -152,6 +161,11 @@ textInput("a_1.3",
            value = "",
            width = '80%', placeholder = NULL)
 htmlOutput("check_1.3")
+textInput("a_1.4",
+           "Let's take a look at the `titanic` data set. In this data set, each observation is a passenger who was on the Titanic; there are a number of variables including passenger class, age, sex, whether the passenger survived or not. If I randomly selected 60 passengers, what is the probability that exactly one third of them survived? (Hint: This question takes a little bit of work, think about how you would go about finding the probability of people who survived. Still confused? See the Quantitative Variables lab exercise.)",
+           value = "",
+           width = '80%', placeholder = NULL)
+htmlOutput("check_1.4")
 ```
 
 ```{r, context = "server"}
@@ -177,6 +191,15 @@ output$check_1.3 <- renderText(
   if(input$a_1.3 == ""){
      ""
   }else if(round(input$a_1.3,2) == round(1- dbinom(8, 16, 0.4), 2)){
+      correct
+  }else{
+    incorrect
+  }
+)
+output$check_1.4 <- renderText(
+  if(input$a_1.4 == ""){
+     ""
+  }else if(round(input$a_1.1,2) == round(dbinom(20, 60, 342/887), 2)){
       correct
   }else{
     incorrect
@@ -268,10 +291,7 @@ output$distn_2 <- renderPlot(
 ```
 
 ### Practice Problems
-display empty line of code like how it starts on current applet
-space for r code mess around
-handful of problems
-include lower.tail info and a question about it -> input r code as an answer (so they know they could use 1- or lower.tail = F)
+
 ```{r ex_2, exercise = TRUE}
 ```
 
@@ -291,6 +311,11 @@ textInput("a_2.3",
            value = "",
            width = '80%', placeholder = NULL)
 htmlOutput("check_2.3")
+textInput("a_2.4",
+           "Back to our titanic data set! If you take a sample of 21 passengers, what is the probability that at least 13 of them were in first class?",
+           value = "",
+           width = '80%', placeholder = NULL)
+htmlOutput("check_2.4")
 ```
 
 ```{r, context = "server"}
@@ -321,7 +346,20 @@ output$check_2.3 <- renderText(
     incorrect
   }
 )
+output$check_2.4 <- renderText(
+  if(input$a_2.4 == ""){
+     ""
+  }else if(round(input$a_2.4,4) == round(1- pbinom(12, 21, 216/887), 4)){
+      correct
+  }else{
+    incorrect
+  }
+)
 ```
+add blurb about lower.tail = F
+use same titanic question as above but have students input code instead of final answer input r code as an answer (so they know they could use 1- or lower.tail = F)
+pbinom(12, 21, 216/887, lower.tail = F)
+
 
 Column
 --------------------------
