@@ -98,8 +98,8 @@ radioButtons("plot_type",
                                "Line" = "line"
                               )
               )
-bs_1 <- reactive("plot(%oi$%ni, %oi$%ni, xlab = '%ni', ylab = '%ni', pch = 20)")
-bs_2 <- reactive("plot(%oi$%ni, %oi$%ni, xlab = '%ni', ylab = '%ni', type = 'l')")
+#bs_1 <- reactive("plot(%oi$%ni, %oi$%ni, xlab = '%ni', ylab = '%ni', pch = 20)")
+#bs_2 <- reactive("plot(%oi$%ni, %oi$%ni, xlab = '%ni', ylab = '%ni', type = 'l')")
 
 htmlOutput("code_2")
 
@@ -108,6 +108,9 @@ plotOutput("plot_2")
 
 
 ```{r, context="server"}
+bs_1 <- reactive("plot(%oi$%ni, %oi$%ni, xlab = '%ni', ylab = '%ni', pch = 20)")
+bs_2 <- reactive("plot(%oi$%ni, %oi$%ni, xlab = '%ni', ylab = '%ni', type = 'l')")
+
 output$plot_2 <- renderPlot({
  eval(parse(text = 
     makeEvalText(
@@ -261,8 +264,9 @@ textInput("plot_var_4_2",
           width = '80%', 
           placeholder = NULL)
 bs_4 <- reactive("my_lm <- lm(%ni ~ %ni, data = %oi)")
-# 
+
 htmlOutput("code_4")
+
 ```
 
 
@@ -270,24 +274,30 @@ htmlOutput("code_4")
 output$code_4 <- renderText(
         makePrintText( 
       base_string = bs_4(), 
-      old_input = c("kellys_80", "point"),
-      new_input = c(input$plot_var_4_1, input$plot_var_4_2, input$reg_line)
+      old_input = c("kellys_80"),# "point"),
+      new_input = c(input$plot_var_4_2, input$plot_var_4_1) #, input$reg_line)
     )
   )
+output$plot_4 <- renderPlot({
+  my_lm <- lm(kellys_80[, input$plot_var_4_2] ~ kellys_80[, input$plot_var_4_1])
+  ggplot(my_lm) +
+  geom_point(aes(x=.fitted, y=.resid)) +
+  xlab("Fitted values") + ylab("Residuals") +
+  geom_hline(yintercept = 0, col = "red")
+})
 ```
 
 Here is a plot of the residuals. In the future, you can simply copy this code, once you have made your own `my_lm`.
 
-
-```{r, echo = FALSE}
-my_lm <- lm(Count ~ Year, data = kellys_80)
-```
-
-```{r, echo = TRUE}
-ggplot(my_lm) + 
+```{r, echo = TRUE, eval = FALSE}
+ggplot(my_lm) +
   geom_point(aes(x=.fitted, y=.resid)) +
   xlab("Fitted values") + ylab("Residuals") +
   geom_hline(yintercept = 0, col = "red")
+```
+
+```{r, echo = FALSE}
+plotOutput("plot_4")
 ```
 
 ```{r, echo=FALSE}
