@@ -181,7 +181,7 @@ output$code_3 <- renderText(
   )
 ```
 
-Be sure to round to round to two decimal places. Use the console at the bottom of the page if you need to do any math. 
+Be sure to round to two decimal places. Use the console at the bottom of the page if you need to do any math. 
 ```{r q_3}
 textInput("a_3",
            "What is the test statistic for reduction in variance due to this regression line?",
