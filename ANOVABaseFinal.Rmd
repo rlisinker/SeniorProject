@@ -1,0 +1,283 @@
+---
+title: "Lab Exercise: ANOVA"
+output: 
+  html_document:
+    theme: cerulean
+runtime: shiny_prerendered
+---
+
+```{r setup, include=FALSE}
+if(file.exists("Lab_Exercise_ANOVA.html")){
+  file.remove("Lab_Exercise_ANOVA.html")
+}
+require(learnr)
+require(ggplot2)
+require(dplyr)
+require(shiny)
+require(tidyr)
+require(httpuv)
+require(tibble)
+require(fmsb)
+knitr::opts_chunk$set(echo = FALSE)
+tags$style(type="text/css",
+         ".shiny-output-error { visibility: hidden; }",
+         ".shiny-output-error:before { visibility: hidden; }"
+)
+source("https://raw.githubusercontent.com/kbodwin/ShinyLabs/master/Scripts/makeStrings.R")
+correct <- "<font color='green'>Correct!</font><br><br>"
+incorrect <- "<font color='red'>Sorry, try again.</font><br><br>"
+congrats <- "<font color='green'>You did it!</font><br><br>"
+babies = read.csv('https://raw.githubusercontent.com/kbodwin/ShinyLabs/master/Datasets/babies_sub.csv')
+# titanic = read.csv('https://raw.githubusercontent.com/kbodwin/ShinyLabs/master/Datasets/titanic.csv')
+# 
+# titanic <- titanic %>% mutate(
+#    Family.Aboard = Siblings.Spouses.Aboard + Parents.Children.Aboard,
+#      Survived = factor(Survived,
+#                     levels = c(0,1),
+#                     labels = c("Died", "Lived")),
+#   Passenger.Class = factor(Pclass, 
+#                            levels = c(1,2,3), 
+#                            labels = c("First", "Second", "Third"))
+# )
+### %ni = new input (red), %oi = old input (blue)
+```
+
+```{r}
+# checkthis = function(input, solution){
+#   if(input == ""){
+#      ""
+#   }else if(as.numeric(input) == solution){
+#       correct
+#   }else{
+#     incorrect
+#   }
+# }
+```
+
+```{r checkthis}
+checkthis = function(input, rounding, solution){
+  if(input == ""){
+     ""
+  }else if(as.numeric(input) == round(solution, rounding)){
+      correct
+  }else{
+    incorrect
+  }
+}
+```
+# {.tabset}
+
+## Baby Names in the U.S.
+
+Our dataset in this lab concerns baby names in a few different states.  
+
+The loaded dataset, `babies`, has information about baby names in the United States from 1940-2016. For each year, and for each name with at least 50 recorded babies born within those years, we are given the counts of how many babies had that name each year. In this dataset, we include only California, and only a few baby names.
+
+Take a look at the dataset, and familiarize yourself with the variables.
+
+```{r ex_1-1, exercise = TRUE, exercise.lines = 5}
+```
+
+## Whose name is most common?
+
+Over time, names come and go out of style.  My family would like to know whose name was most popular overall since 1991, the year my brother was born. My brother is named Gregory, and my parents are named Diane and Jim.
+
+We will regard the counts in each year as an independent observation, and perform an ANOVA test to see if the mean number of people born between 1991 and 2016 is different for the names Kelly, Gregory, Diane, and Jim.
+
+**Think about it:** Why is it unreasonable to treat each year as an independent sample?  Does knowing the counts in 1991 give you any extra information about 1992?
+
+First, we need to `filter()` the dataset first, to narrow down the years and the names!
+
+```{r, echo = TRUE}
+bodwins_91 <- subset(babies, Name = c("Kelly", "Gregory", "Diane", "Jim"), Year >1990)
+```
+
+Use the code box below to make side-by-side boxplots comparing the name counts for the four names in my family since 1991. (Hint: See the Quantitative Variables lab exercise.)
+
+
+```{r boxplots, exercise = TRUE, exercise.lines = 5}
+```
+
+## ANOVA in R
+
+
+```{r, echo=FALSE}
+textInput("plot_var_6_1", 
+          "What QUANTITATIVE variable would you like to compare the means of?", 
+          value = "", 
+          width = '80%', 
+          placeholder = NULL)
+textInput("plot_var_6_2", 
+          "What CATEGORICAL variable separates the groups?", 
+          value = "", 
+          width = '80%', 
+          placeholder = NULL)
+bs_6 <- reactive("%oi(lm(%ni ~ %ni, data = %oi))")
+
+htmlOutput("code_6")
+
+tableOutput("plot_6")
+```
+
+
+```{r, context="server"}
+output$plot_6 <- renderTable({
+ tidy(eval(parse(text =
+    makeEvalText(
+      base_string = bs_6(),
+      old_input = c("anova", "bodwins_91"),
+      new_input = c(input$plot_var_6_1, input$plot_var_6_2)
+    )
+   )))
+})
+
+output$code_6 <- renderText(
+        makePrintText( 
+      base_string = bs_6(), 
+      old_input = c("anova", "bodwins_91"),
+      new_input = c(input$plot_var_6_1, input$plot_var_6_2)
+    )
+  )
+```
+Be sure to **round** to two decimal places.
+```{r q_7}
+textInput("a_7",
+           "What is test statistic for the ANOVA test of my family's names?",
+           value = "",
+           width = '80%', placeholder = NULL)
+htmlOutput("check_7")
+```
+
+```{r, context = "server"}
+output$check_7 <- renderText(checkthis(input$a_7, 2, 11.307))
+```
+
+```{r q_8}
+textInput("a_8",
+           "What is p-value of this test?",
+           value = "",
+           width = '80%', placeholder = NULL)
+htmlOutput("check_8")
+```
+
+```{r, context = "server"}
+output$check_8 <- renderText(checkthis(input$a_8, 2, 0))
+```
+
+```{r q_9}
+radioButtons("a_9",
+           "At the 0.05 level, we conclude that",
+           choices = c(
+             "There is no difference in the mean counts of the four Bodwin names." = "no1",
+              "All four Bodwin names have different mean counts." = "no2",
+             "At least one Bodwin name has a different mean count." = "yes")
+)
+htmlOutput("check_9")
+```
+
+```{r, context = "server"}
+output$check_9 <- renderText(
+  if(input$a_9 == ""){
+     ""
+  }else if(input$a_9 == "yes"){
+      correct
+  }else{
+    incorrect
+  }
+)
+```
+
+## Tukey's Honest Significant Difference
+
+Finally, we need to decide exactly how my family's names relate to each other.  Use the code below to run t-tests for each pair of names, and adjust the p-values to correct for **multiple testing**.
+
+
+```{r, echo=FALSE}
+textInput("plot_var_8_1", 
+          "What QUANTITATIVE variable would you like to compare the means of?", 
+          value = "", 
+          width = '80%', 
+          placeholder = NULL)
+textInput("plot_var_8_2", 
+          "What CATEGORICAL variable separates the groups?", 
+          value = "", 
+          width = '80%', 
+          placeholder = NULL)
+bs_8 <- reactive("%oi(%oi(lm(%ni ~ %ni, data = %oi)))")
+
+htmlOutput("code_8")
+
+tableOutput("plot_8")
+```
+
+
+```{r, context="server"}
+output$plot_8 <- renderTable({
+ tidy(eval(parse(text = 
+    makeEvalText(
+      base_string = bs_8(), 
+      old_input = c("TukeyHSD", "aov", "bodwins_91"),
+      new_input = c(input$plot_var_8_1, input$plot_var_8_2)
+    )
+   )))
+})
+output$code_8 <- renderText(
+        makePrintText( 
+      base_string = bs_8(), 
+      old_input = c("TukeyHSD", "aov", "bodwins_91"),
+      new_input = c(input$plot_var_8_1, input$plot_var_8_2)
+    )
+  )
+```
+
+
+
+```{r q_10_and11}
+radioButtons("a_10",
+           "Order the names by count (largest count to smallest count)",
+           choices = c(
+             "Gregory, Kelly, Jim, Diane" = "no1",
+              "Kelly, Jim, Diane, Gregory" = "no2",
+             "Gregory, Kelly, Diane, Jim" = "yes",
+             "Jim, Diane, Kelly, Gregory" = "no3",
+             "Diane, Jim, Kelly, Gregory" = "no4"
+             )
+)
+htmlOutput("check_10")
+
+# could add in a fill in the blank table for connected letters report
+
+radioButtons("a_11",
+           "What is your final conclusion?",
+           choices = c(
+             "There is no difference in the mean counts of the four Bodwin names." = "no1",
+              "All four Bodwin names have different mean counts." = "no2",
+             "Gregory is the most common name; the rest all have the same means." = "no3",
+             "Gregory and Kelly are equally common, and they are less common than Jim. Most common is Diane." = "no4",
+             "Gregory and Kelly are equally common, and they are more common than Diane and Jim, which are equal." = "yes",
+             "Jim is the most common, followed by Diane, then Kelly, then Gregory" = "no5"
+             )
+)
+htmlOutput("check_11")
+```
+
+```{r, context = "server"}
+output$check_10 <- renderText(
+  if(input$a_10 == ""){
+     ""
+  }else if(input$a_10 == "yes"){
+      correct
+  }else{
+    incorrect
+  }
+)
+output$check_11 <- renderText(
+  if(input$a_11 == ""){
+     ""
+  }else if(input$a_11 == "yes"){
+      correct
+  }else{
+    incorrect
+  }
+)
+```
