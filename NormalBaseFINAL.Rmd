@@ -491,5 +491,5 @@ output$check_4.1 <- renderText(checkthis(input$a_4.1, 2, 0.5))
 output$check_4.2 <- renderText(checkthis(input$a_4.2, 2, 0.16))
 output$check_4.3 <- renderText(checkthis(input$a_4.3, 2, 0.84))
 output$check_4.4 <- renderText(checkthis(input$a_4.4, 2, 9))
-output$check_4.5 <- renderText(checkthis(input$a_4.5, 2, 1))
+output$check_4.5 <- renderText(checkthis(input$a_4.5, 2, 1)) 
 ```
