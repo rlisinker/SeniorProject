@@ -1,0 +1,495 @@
+---
+title: "Normal!"
+output: 
+  html_document:
+    theme: cerulean
+runtime: shiny_prerendered
+---
+
+```{r setup, include=FALSE}
+if(file.exists("NormalBaseFINAL.html")){
+  file.remove("NormalBaseFINAL.html")
+}
+require(learnr)
+require(ggplot2)
+require(dplyr)
+require(shiny)
+require(tidyr)
+require(httpuv)
+knitr::opts_chunk$set(echo = FALSE)
+source("https://raw.githubusercontent.com/kbodwin/Introductory-Statistics-Labs/master/Scripts/makeStrings.R")
+source("https://raw.githubusercontent.com/kbodwin/Introductory-Statistics-Labs/master/Scripts/plotDensities.R")
+correct <- "<font color='red'>Correct!</font><br><br>"
+incorrect <- "<font color='red'>Sorry, try again.</font><br><br>"
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r}
+checker <- function(
+  label,
+  user_code,
+  solution_code,
+  check_code,
+  envir_result,
+  evaluate_result,
+  envir_prep,
+  ...
+) {
+  list(message = "Great job!", correct = TRUE, location = "append")
+}
+``` 
+
+# {.tabset}
+
+## Intro {.tabset .tabset-pills}
+
+### Purpose 
+
+This applet will go over three functions to help you with the normal distribution: <br>
+**pnorm** will calculate the probability of a Normal random variable taking a value less than or equal to a given number <br>
+**qnorm** will return the value of the inverse cumulative density function, this means you can use it to find the $p^{th}$ quantile of the normal distribution <br>
+**rnorm** will randomly generate a specified number of values from a normal distribution of your choosing <br>
+
+
+### Brief Review of the Normal Distribution
+<div class = "row">
+
+<div class = "col-md-6">
+The normal distribution is frequently used in statistics and is characterized by its bell-shaped curve. 
+
+If a random variable follows a normal distribution we write it as: X~Normal(mean, sd)
+
+The normal distribution can be used as an approximation to the binomial distribution under certain circumstances:
+
+Recall that the notation for a binomial distribution is X~Binomial(n, p). If n is large and/or p is close to 0.5, we are able to say that X~Normal(np, npq) where q = 1-p
+</div>
+
+<div class = "col-md-6">
+This is the standard normal distribution. This distribution has a mean of 0 and a standard deviation of 1. It is what we base z-score calculations off of. 
+```{r}
+illustrate_norm(0, 1, x = 0)
+```
+</div>
+
+</div>
+
+## pnorm {.tabset .tabset-pills}
+
+### What does pnorm look like?
+
+Recall that for Binomial random variables, `pbinom()` calculated the probability of getting less than *or equal to* a certain number of successes.  Similarly, `pnorm()` will find the probability of a Normal random variable taking a value less than or equal to a given cutoff.
+
+We can use `pnorm()` to quantify **evidence** by finding the probability of a Normal random variable taking a value *larger* than some given value. Try it below: <br><br>
+
+<div class = "row">
+<div class = "col-md-4">
+```{r pnorm}
+textInput("mu1",
+          "What is the mean of your Normal random variable?",
+          value = "0",
+          width = '80%', placeholder = NULL)
+textInput("sigma1",
+          "What is the standard deviation of your Normal random variable?",
+          value = "0",
+          width = '80%', placeholder = NULL)
+textInput("x1",
+          "What cutoff value do you want to find the area below?",
+          value = "0",
+          width = '80%', placeholder = NULL)
+bs_1 = reactive("pnorm(%ni, mean = %ni, sd = %ni)")
+```
+
+</div>
+
+<div class = "col-md-6">
+```{r}
+plotOutput("distn_1")
+```
+</div>
+
+<div class = "col">
+Random variable and probability statement:
+```{r}
+htmlOutput("normm_var_1")
+```
+
+Code:
+```{r}
+htmlOutput("code_1")
+```
+
+Result:
+```{r}
+verbatimTextOutput("output_1")
+```
+</div>
+</div>
+
+```{r, context="server"}
+output$code_1 <- renderText(
+        makePrintText(
+          base_string = bs_1(),
+          old_input = c(),
+          new_input = c(input$x1, input$mu1, input$sigma1)
+        )
+  )
+output$output_1 <- renderPrint({
+ eval(parse(text = 
+    makeEvalText(
+          base_string = bs_1(),
+          old_input = c(),
+          new_input = c(input$x1, input$mu1, input$sigma1)
+    )
+   ))
+})
+output$norm_var_1 <- renderText(
+        makePrintText(
+          base_string = "X ~ Normal(%ni, %ni) \n P(X ≤ %ni) = ?",
+          old_input = c(),
+          new_input = c(input$mu1, input$sigma1, input$x1)
+        )
+  )
+output$distn_1 <- renderPlot(
+  illustrate_norm(input$mu1, input$sigma1, x = input$x1)
+)
+```
+
+
+### Practice Problems
+
+In the box below, you may run any line of **R** code. You will be given feedback when you type an answer into each box.
+
+(Draw pictures to help you visualize! Does your answer make sense?)
+
+*Round your answers to 2 decimals*
+
+```{r ex_1-1, exercise = TRUE}
+```
+
+Suppose heights of people are Normally distributed, with a mean of 67 inches and a standard deviation of 3 inches.
+```{r}
+textInput("q1.1",
+           "What is the probability that a randomly sampled person is less than 5 feet (60 inches) tall?",
+           value = "",
+           width = '80%', placeholder = NULL)
+htmlOutput("check_1.1")
+textInput("q1.2",
+           "What is the probability that a randomly sampled person is at least 71 inches tall?",
+           value = "",
+           width = '80%', placeholder = NULL)
+htmlOutput("check_1.2")
+textInput("q1.3",
+           "What is the area below a z-score of -1.38?",
+           value = "",
+           width = '80%', placeholder = NULL)
+htmlOutput("check_1.3")
+```
+
+```{r checkthis}
+checkthis = function(input, rounding, solution){
+  if(input == ""){
+     ""
+  }else if(as.numeric(input) == round(solution, rounding)){
+      correct
+  }else{
+    incorrect
+  }
+}
+```
+
+```{r, context = "server"}
+output$check_1.1 <- renderText(checkthis(input$q1.1, 2, 0.009815))
+output$check_1.2 <- renderText(checkthis(input$q1.2, 2, 0.158655))
+output$check_1.3 <- renderText(checkthis(input$q1.3, 2, 0.0837933))
+```
+
+
+## qnorm {.tabset .tabset-pills}
+
+### What does qnorm look like?
+As we saw with the Binomial exercise, sometimes we want to ask probability questions “in reverse”. For example, we might ask “What SAT score puts someone in the 95th percentile of all scores?”. (That is, what score is better than 95% of all scores.) We could answer this via guess-and-check with `pnorm()`, but fortunately, there is a function for it in **R** called `qnorm()`
+
+<div class = "row">
+<div class = "col-md-4">
+```{r qnorm2}
+textInput("mu2",
+          "What is the mean of your Normal random variable?",
+          value = "0",
+          width = '80%', placeholder = NULL)
+textInput("sd2",
+          "What is the standard deviation of your Normal random variable?",
+          value = "0",
+          width = '80%', placeholder = NULL)
+textInput("q2",
+          "We want to find the value that has an area of ____ below it.",
+          value = "0",
+          width = '80%', placeholder = NULL)
+bs_2 = reactive("qnorm(%ni, mean = %ni, sd = %ni)")
+```
+</div>
+<div class = "col-md-6">
+```{r}
+plotOutput("distn_3")
+```
+</div>
+<div class = "col">
+Random variable and probability statement:
+```{r}
+htmlOutput("norm_var_3")
+```
+
+Code:
+```{r}
+htmlOutput("code_3")
+```
+
+Result:
+```{r}
+verbatimTextOutput("output_3")
+```
+</div>
+</div>
+
+
+```{r, context="server"}
+output$code_3 <- renderText(
+        makePrintText(
+          base_string = bs_2(),
+          old_input = c(),
+          new_input = c(input$q2, input$mu2, input$sigma2)
+        )
+  )
+output$output_3 <- renderPrint({
+ eval(parse(text = 
+    makeEvalText(
+      base_string = bs_2(), 
+      old_input = c(),
+      new_input = c(input$q2, input$mu2, input$sigma2)
+    )
+   ))
+})
+output$norm_var_3 <- renderText(
+        makePrintText(
+          base_string = "X ~ Normal(%ni, %ni) \n P(X ≤ ?) = %ni",
+          old_input = c(),
+          new_input = c(input$mu2, input$sigma2, input$q2)
+        )
+  )
+output$distn_3 <- renderPlot(
+  illustrate_norm(input$mu2, input$sigma2, q = input$q2)
+)
+```
+
+
+### Practice Problems
+
+In the boxes below each question, you may run any line of **R** code. Use the consoles to answer the following questions and click **Submit Answer** to check your code.
+
+Suppose SAT scores are Normally distributed with a meand of 1600 and a standard deviation of 200.
+
+What SAT score would put someone in the 95th percentile?
+```{r 2a, exercise = TRUE, exercise.checker = TRUE, exercise.lines = 3}
+
+```
+
+```{r 2a-check}
+qnorm(0.95, 1600, 200)
+checker()
+```
+
+What SAT score is worse than 80% of all scores?
+```{r 2b, exercise = TRUE, exercise.checker = TRUE, exercise.lines = 3}
+
+```
+
+```{r 2b-check}
+qnorm(0.20, 1600, 200)
+checker()
+```
+
+What is the third quartile of SAT scores?
+```{r 2c, exercise = TRUE, exercise.checker = TRUE, exercise.lines = 3}
+
+```
+
+```{r 2c-check}
+qnorm(0.75, 1600, 200)
+checker()
+```
+
+What z-score has 95% below it?
+```{r 2d, exercise = TRUE, exercise.checker = TRUE, exercise.lines = 3}
+
+```
+
+```{r 2d-check}
+qnorm(0.95, 0, 1)
+checker()
+```
+
+
+## rnorm {.tabset .tabset-pills}
+
+### What does rnorm do?
+
+
+<div class = "row">
+<div class = "col-md-4">
+```{r rnorm}
+textInput("mu3",
+          "What is the mean of your Normal random variable?",
+          value = "0",
+          width = '80%', placeholder = NULL)
+textInput("sd3",
+          "What is the standard deviation of your Normal random variable?",
+          value = "0",
+          width = '80%', placeholder = NULL)
+textInput("n",
+          "How many numbers would you like to randomly generate from this ",
+          value = "0",
+          width = '80%', placeholder = NULL)
+bs_4 = reactive("rnorm(n = %ni, mean = %ni, sd = %ni)")
+```
+</div>
+
+<div class = "col-md-6">
+Code:
+```{r}
+htmlOutput("code_3")
+```
+
+Result:
+```{r}
+verbatimTextOutput("output_3")
+```
+</div>
+</div>
+
+
+```{r, context="server"}
+output$code_3 <- renderText(
+        makePrintText(
+          base_string = bs_4(),
+          old_input = c(),
+          new_input = c(input$n, input$mu3, input$sd3)
+        )
+  )
+output$output_3 <- renderPrint({
+ eval(parse(text = 
+    makeEvalText(
+      base_string = bs_4(), 
+      old_input = c(),
+      new_input = c(input$n, input$mu3, input$sd3)
+    )
+   ))
+})
+
+```
+
+
+### Practice Problems
+Each of the following questions is associated with the following code: 
+`rnorm(10, 30, 6)`
+
+```{r q_9}
+radioButtons("r_1",
+           "How likely is it that a number between 9 and 12 is in the 10 numbers generated with this code?",
+           choices = c(
+             "Likely" = "no",
+             "Not Likely" = "yes")
+)
+htmlOutput("check_r1")
+
+radioButtons("r_2",
+           "How likely is it that a number between 24 and 36 is in the 10 numbers generated with this code?",
+           choices = c(
+             "Likely" = "yes",
+             "Not Likely" = "no")
+)
+htmlOutput("check_r2")
+
+radioButtons("r_3",
+           "How likely is it that 30 (exactly) is in the 10 numbers generated with this code?",
+           choices = c(
+             "Likely" = "no",
+             "Not Likely" = "yes")
+)
+htmlOutput("check_r3")
+```
+
+```{r, context = "server"}
+output$check_r1 <- renderText(
+  if(input$r_1 == ""){
+     ""
+  }else if(input$r_1 == "yes"){
+      correct
+  }else{
+    incorrect
+  }
+)
+
+output$check_r2 <- renderText(
+  if(input$r_2 == ""){
+     ""
+  }else if(input$r_2 == "yes"){
+      correct
+  }else{
+    incorrect
+  }
+)
+
+output$check_r3 <- renderText(
+  if(input$r_3 == ""){
+     ""
+  }else if(input$r_3 == "yes"){
+      correct
+  }else{
+    incorrect
+  }
+)
+```
+
+
+## Extra Problems {.tabset .tabset-pills}
+
+A good habit to get into when coding is to "translate" your code to English in your head, and try to predict what the output will be. Are you truly asking the computer to calculate what you hoped? (Remember: computers will almost always output *something*! It is your responsibility as the scientist to make sure you have asked the right question.)
+
+For the following, try to guess what the output would be.  Do **not** run the code; instead, try to read it as a probability question and think through the answer.
+
+*Give answers to 2 decimals*
+
+```{r q_4}
+textInput("a_4.1",
+           "pnorm(0, mean = 0, sd = 1)",
+           value = "",
+           width = '80%', placeholder = NULL)
+htmlOutput("check_4.1")
+textInput("a_4.2",
+           "pnorm(-1, mean = 0, sd = 1)",
+           value = "",
+           width = '80%', placeholder = NULL)
+htmlOutput("check_4.2")
+textInput("a_4.3",
+           "pnorm(7, mean = 5, sd = 2)",
+           value = "",
+           width = '80%', placeholder = NULL)
+htmlOutput("check_4.3")
+textInput("a_4.4",
+           "qnorm(0.975, mean = 5, sd = 2)",
+           value = "",
+           width = '80%', placeholder = NULL)
+htmlOutput("check_4.4")
+textInput("a_4.5",
+           "qnorm(0.025, mean = 5, sd = 2)",
+           value = "",
+           width = '80%', placeholder = NULL)
+htmlOutput("check_4.5")
+```
+
+```{r, context = "server"}
+output$check_4.1 <- renderText(checkthis(input$a_4.1, 2, 0.5))
+output$check_4.2 <- renderText(checkthis(input$a_4.2, 2, 0.16))
+output$check_4.3 <- renderText(checkthis(input$a_4.3, 2, 0.84))
+output$check_4.4 <- renderText(checkthis(input$a_4.4, 2, 9))
+output$check_4.5 <- renderText(checkthis(input$a_4.5, 2, 1))
+```
