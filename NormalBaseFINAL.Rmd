@@ -7,8 +7,8 @@ runtime: shiny_prerendered
 ---
 
 ```{r setup, include=FALSE}
-if(file.exists("Lab_Exercise_Normal.html")){
-  file.remove("Lab_Exercise_Normal.html")
+if(file.exists("NormalBaseFINAL.html")){
+  file.remove("NormalBaseFINAL.html")
 }
 require(learnr)
 require(ggplot2)

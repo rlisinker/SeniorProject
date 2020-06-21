@@ -7,10 +7,11 @@ runtime: shiny_prerendered
 ---
 
 ```{r setup, include=FALSE}
-if(file.exists("Lab_Exercise_Linear_Regression.html")){
-  file.remove("Lab_Exercise_Linear_Regression.html")
+if(file.exists("LinRegBaseFINAL.html")){
+  file.remove("LinRegBaseFINAL.html")
 }
 require(learnr)
+require(broom)
 require(ggplot2)
 require(dplyr)
 require(shiny)
@@ -158,21 +159,34 @@ bs_3 <- reactive("summary(%oi(%ni ~ %ni, data = %oi))")
 
 htmlOutput("code_3")
 
-verbatimTextOutput("plot_3")
+tableOutput("plot_3")
+
+tableOutput("extra")
 
 ```
 
 
 ```{r, context="server"}
-output$plot_3 <- renderPrint({
- eval(parse(text = 
+output$plot_3 <- renderTable({
+ tidy(eval(parse(text = 
     makeEvalText(
       base_string = bs_3(), 
       old_input = c("lm", "kellys_80"),
       new_input = c(input$plot_var_3_2, input$plot_var_3_1)
     )
-   )) 
+   ))) 
 })
+
+output$extra <- renderTable({
+ glance(eval(parse(text = 
+    makeEvalText(
+      base_string = bs_3(), 
+      old_input = c("lm", "kellys_80"),
+      new_input = c(input$plot_var_3_2, input$plot_var_3_1)
+    )
+   ))) 
+})
+
 output$code_3 <- renderText(
         makePrintText( 
       base_string = bs_3(), 
@@ -185,14 +199,14 @@ output$code_3 <- renderText(
 Be sure to round to two decimal places. Use the console at the bottom of the page if you need to do any math. 
 ```{r q_3}
 textInput("a_3",
-           "What is the test statistic for reduction in variance due to this regression line?",
+           "What is the test statistic for overall model utility for this regression line?",
            value = "0",
            width = '80%', placeholder = NULL)
 htmlOutput("check_3")
 ```
 
 ```{r, context = "server"}
-output$check_3 <- renderText(checkthis(round(as.numeric(input$a_3), 2), 1565))
+output$check_3 <- renderText(checkthis(input$a_3, 1564.62))
 ```
 
 
@@ -205,7 +219,7 @@ htmlOutput("check_31")
 ```
 
 ```{r, context = "server"}
-output$check_31 <- renderText(checkthis(round(as.numeric(input$a_31), 2), -39.55))
+output$check_31 <- renderText(checkthis(input$a_31 -39.56))
 ```
 
 ```{r q_4}
@@ -217,7 +231,7 @@ htmlOutput("check_4")
 ```
 
 ```{r, context = "server"}
-output$check_4 <- renderText(checkthis(as.numeric(input$a_4), 0))
+output$check_4 <- renderText(checkthis(input$a_4, 0))
 ```
 
 ```{r q_6}
@@ -229,7 +243,7 @@ htmlOutput("check_6")
 ```
 
 ```{r, context = "server"}
-output$check_6 <- renderText(checkthis(round(as.numeric(input$a_6), 2), 97.87))
+output$check_6 <- renderText(checkthis(input$a_6, 98))
 ```
 
 
@@ -242,7 +256,7 @@ htmlOutput("check_5")
 ```
 
 ```{r, context = "server"}
-output$check_5 <- renderText(checkthis(round(as.numeric(input$a_5), 2), -0.99))
+output$check_5 <- renderText(checkthis(input$a_5, round(sqrt(0.98),2)))
 ```
 
 ```{r math, exercise = TRUE}

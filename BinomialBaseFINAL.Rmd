@@ -7,6 +7,9 @@ runtime: shiny_prerendered
 ---
 
 ```{r setup, include=FALSE}
+if(file.exists("BinomialBaseFINAL.html")){
+  file.remove("BinomialBaseFINAL.html")
+}
 require(ggplot2)
 require(dplyr)
 require(tidyr)

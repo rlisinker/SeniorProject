@@ -7,10 +7,11 @@ runtime: shiny_prerendered
 ---
 
 ```{r setup, include=FALSE}
-if(file.exists("Lab_Exercise_ANOVA.html")){
-  file.remove("Lab_Exercise_ANOVA.html")
+if(file.exists("ANOVABaseFinal.html")){
+  file.remove("ANOVABaseFinal.html")
 }
 require(learnr)
+require(broom)
 require(ggplot2)
 require(dplyr)
 require(shiny)
